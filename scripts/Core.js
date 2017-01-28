@@ -39,6 +39,7 @@
 
     function TestThreeJS() {
         var camera, scene, renderer;
+        var control;
         var mesh;
         var keyboard;
         var map = [
@@ -72,11 +73,18 @@
         animate();
 
         function init() {
+            // Creation de la scene
+            scene = new THREE.Scene();
+
+            // Creation de la camera
             camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
             camera.position.z = 400;
             camera.position.x = 100;
             camera.position.y = 100;
-            scene = new THREE.Scene();
+
+            // Definition du mode de control de la camera
+            control = new THREE.OrbitControls(camera);
+
             // var texture = new THREE.TextureLoader().load('assets/brickwall.jpg');
             // var geometry = new THREE.BoxBufferGeometry(200, 200, 200);
             // var material = new THREE.MeshBasicMaterial({map: texture});
@@ -108,12 +116,14 @@
             mainlight.target.position.set(0, 0, 0);
             scene.add( mainlight );
 
-            createMap(map, 16, scene);
-            loadObj(scene);
+            //createMap(map, 16, scene);
+            loadObj("monu9", scene);
+            loadObj("castle", scene);
             // var plane = new THREE.Mesh(new THREE.PlaneGeometry(2000,2000), new THREE.MeshLambertMaterial({color: 0x22FF11}));
             // plane.receiveShadow = true;
             // scene.add(plane);
 
+            // Creation du renderer
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -134,7 +144,6 @@
 
             document.body.appendChild(renderer.domElement);
             document.addEventListener("keydown", onKeyDown, false);
-            //
             window.addEventListener('resize', onWindowResize, false);
         }
 
@@ -198,15 +207,15 @@
         }
     }
 
-    function loadObj(scene) {
+    function loadObj(filename, scene) {
         var materialLoader = new THREE.MTLLoader();
         materialLoader.setTexturePath("assets/");
-        materialLoader.load("assets/monu9.mtl", function(material) {
+        materialLoader.load("assets/" + filename + ".mtl", function(material) {
             material.preload();
 
             var loader = new THREE.OBJLoader();
             loader.setMaterials(material);
-            loader.load("assets/monu9.obj", function(object) {
+            loader.load("assets/" + filename + ".obj", function(object) {
                 /*
                 object.traverse( function ( child ) {
 
