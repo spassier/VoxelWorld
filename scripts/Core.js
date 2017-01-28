@@ -77,10 +77,8 @@
             scene = new THREE.Scene();
 
             // Creation de la camera
-            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
-            camera.position.z = 400;
-            camera.position.x = 100;
-            camera.position.y = 100;
+            camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 10000);
+            camera.position.set(100, 100, 100);
 
             // Definition du mode de control de la camera
             control = new THREE.OrbitControls(camera);
@@ -93,52 +91,60 @@
 
             var ambient = new THREE.AmbientLight( 0x999999 );
             scene.add( ambient );
-            var mainlight = new THREE.DirectionalLight( 0xffffff );
 
+            var mainlight = new THREE.DirectionalLight( 0xffffff, 1 );
             //shadow stuff
-            mainlight.shadowCameraNear = 50;
-            mainlight.shadowCameraFar = camera.far;
+            mainlight.shadowCameraNear = 1;
+            mainlight.shadowCameraFar = 500;
 
             mainlight.castShadow = true;
-            mainlight.shadowDarkness = 0.5;
+            mainlight.shadowDarkness = 1.0;
             mainlight.shadowCameraVisible = true;
-            mainlight.shadowMapWidth = 2048;
-            mainlight.shadowMapHeight = 2048;
+            mainlight.shadowMapWidth = 1024;
+            mainlight.shadowMapHeight = 1024;
 
-            mainlight.shadowCameraLeft = -20; // or whatever value works for the scale of your scene
-            mainlight.shadowCameraRight = 20;
-            mainlight.shadowCameraTop = 20;
-            mainlight.shadowCameraBottom = -20;
+            mainlight.shadowCameraLeft = -100; // or whatever value works for the scale of your scene
+            mainlight.shadowCameraRight = 100;
+            mainlight.shadowCameraTop = 100;
+            mainlight.shadowCameraBottom = -100;
 
-            mainlight.position.x = -10;
-            mainlight.position.y = 150;
-            mainlight.position.z = 0;
-            mainlight.target.position.set(0, 0, 0);
+            mainlight.position.set( 100, 50, 100 );
             scene.add( mainlight );
+            scene.add( new THREE.DirectionalLightHelper(mainlight, 0.10) );
 
-            //createMap(map, 16, scene);
+            //createMap(map, 2, scene);
             loadObj("monu9", scene);
             loadObj("castle", scene);
-            // var plane = new THREE.Mesh(new THREE.PlaneGeometry(2000,2000), new THREE.MeshLambertMaterial({color: 0x22FF11}));
-            // plane.receiveShadow = true;
-            // scene.add(plane);
+            var cube = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 3), new THREE.MeshLambertMaterial({color: 0x225511}));
+            cube.castShadow = true;
+            //cube.receiveShadow = true;
+            cube.position.x = 0;
+            cube.position.y = 10;
+            cube.position.z = 20;
+            scene.add(cube);
+            // var cube2 = new THREE.Mesh(new THREE.BoxGeometry(100, 1, 100), new THREE.MeshLambertMaterial({color: 0x555566}));
+            // cube2.castShadow = true;
+            // cube2.receiveShadow = true;
+            // cube2.position.x = 0;
+            // cube2.position.y = -10;
+            // cube2.position.z = 0;
+            // scene.add(cube2);
 
             // Creation du renderer
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.shadowMapEnabled = true;
-            renderer.shadowMapEnabled = true;
-            renderer.shadowMapSoft = true;
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-            renderer.shadowCameraNear = 3;
-            renderer.shadowCameraFar = camera.far;
-            renderer.shadowCameraFov = 50;
-
-            renderer.shadowMapBias = 0.0039;
-            renderer.shadowMapDarkness = 0.5;
-            renderer.shadowMapWidth = 1024;
-            renderer.shadowMapHeight = 1024;
+            // renderer.shadowCameraNear = 3;
+            // renderer.shadowCameraFar = camera.far;
+            // renderer.shadowCameraFov = 50;
+            //
+            // renderer.shadowMapBias = 0.0039;
+            // renderer.shadowMapDarkness = 0.5;
+            // renderer.shadowMapWidth = 1024;
+            // renderer.shadowMapHeight = 1024;
 
             //keyboard = new THREE.KeyboardState();
 
@@ -198,13 +204,33 @@
             for (var j = 0, max2 = map[i].length; j < max2; j = j + 1) {
                 if (map[i][j] == 1) {
                     var cube = new THREE.Mesh(geometry, material);
-                    cube.position.set(BLOCK_SIZE * j, BLOCK_SIZE / 2, BLOCK_SIZE * i);
+                    cube.position.set(BLOCK_SIZE * j, BLOCK_SIZE * 10, BLOCK_SIZE * i);
                     cube.castShadow = true;
                     cube.receiveShadow = true;
                     scene.add(cube);
                 }
             }
         }
+    }
+
+    function loadObj2(filename, scene) {
+        var texture = new THREE.TextureLoader().load("assets/" + filename + ".png");
+        //var texture = new THREE.TextureLoader().load('assets/brickwall.jpg');
+        var lambert = new THREE.MeshLambertMaterial({color: 0xffffff, map: texture});
+        var loader = new THREE.OBJLoader();
+        //loader.setMaterials(material);
+        loader.load("assets/" + filename + ".obj", function(object) {
+            object.traverse(function(child) {
+                if (child instanceof THREE.Mesh){
+                    child.material = lambert;
+                    child.castShadow = true;
+                }
+            });
+
+            object.castShadow = true;
+            object.receiveShadow = true;
+            scene.add(object);
+        });
     }
 
     function loadObj(filename, scene) {
@@ -245,7 +271,14 @@
                 });
                 */
 
-                object.scale.set(5, 5, 5);
+                object.traverse(function(child) {
+                    if (child instanceof THREE.Mesh){
+                        //child.material = lambert;
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                    }
+                });
+                //object.scale.set(5, 5, 5);
                 object.castShadow = true;
                 object.receiveShadow = true;
                 scene.add(object); // mesh pour le wireframe
