@@ -114,7 +114,7 @@
 
             //createMap(map, 2, scene);
             loadObj("monu9", scene);
-            loadObj("castle", scene);
+            //loadObj("castle", scene);
             var cube = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 3), new THREE.MeshLambertMaterial({color: 0x225511}));
             cube.castShadow = true;
             //cube.receiveShadow = true;
@@ -291,4 +291,4 @@
         exports.TestThreeJS = new TestThreeJS();
     });
 
-})();
+})(this);
